@@ -69,11 +69,15 @@
 			{
 				agentData = _detectAgent();
 				CurrentUrl = CurrentUrl || location.href;
+				Line = parseInt(Line, 10);
+				if (isNaN(Line)) {
+					Line = 0;
+				}
 
 				var t = new Image();
 				t.src = urlToLogErrorsOnServer +
 					'&url=' + encodeURIComponent(CurrentUrl) +
-					'&line=' + parseInt(Line, 10) +
+					'&line=' + Line +
 					'&os=' + encodeURIComponent(agentData.os) +
 					'&browser=' + encodeURIComponent(agentData.browser + ' v.' + agentData.version) +
 					'&message=' + encodeURIComponent(Message);
@@ -95,12 +99,16 @@
 		{
 			var agentData = _detectAgent();
 			CurrentUrl = CurrentUrl || location.href;
+			Line = parseInt(Line, 10);
+			if (isNaN(Line)) {
+				Line = 0;
+			}
 
 			_gaq.push([
 				'_trackEvent',
 				'Custom Javascript Error',
 				Message,
-				agentData.browser + ' v.' + agentData.version + '(' + agentData.os + ')' + ' -> ' + CurrentUrl + " :" + parseInt(Line, 10),
+				agentData.browser + ' v.' + agentData.version + '(' + agentData.os + ')' + ' -> ' + CurrentUrl + ": " + Line,
 				0,
 				true
 			]);
@@ -179,6 +187,13 @@
 				// reimplementing log method on init to make it configuralbe
 				logError = function(Message, Url, Line)
 				{
+					// to easily log error in catch statement
+					if (Message instanceof Error) {
+						Url = Message.fileName;
+						Line = Message.lineNumber;
+						Message = Message.message;
+					}
+
 					if ('logErrorsOnServer' in Params) {
 						_logErrorOnServer(Message, Url, Line);
 					}
@@ -238,8 +253,8 @@
 </script>
 
 
-<!-- Example init -->
 <script type="text/javascript">
+	// Example init
 	(function()
 	{
 		"use strict";
@@ -251,4 +266,22 @@
 			logMessagesOnGA: true
 		});
 	}());
+</script>
+
+
+<script type="text/javascript">
+	// Examples of error logging
+	// 1 in catch statement
+	try {
+		throw new Error('some error message');
+	}
+	catch (e) {
+		Logger.logError(e);
+	}
+
+	// 2 by hand, when we just think it's an error for any reason
+	Logger.logError('error message by hand');
+
+	// Example of logging a message
+	Logger.logMessage('just message to log');
 </script>
