@@ -3,8 +3,8 @@
 	{
 		"use strict";
 
-		var urlToLogErrorsOnServer = null,
-			urlToLogMessagesOnServer = null;
+		var urlToSendErrorsToServer = null,
+			urlToSendMessagesToServer = null;
 
 		/**
 		 * Detect OS and browser
@@ -56,16 +56,16 @@
 		}
 
 		/**
-		 * Log error on local server
+		 * Send error to local server
 		 * @param {String} Message
 		 * @param {String|Null} CurrentUrl
 		 * @param {int} Line
 		 * @private
 		 */
-		function _logErrorOnServer(Message, CurrentUrl, Line)
+		function _sendErrorToServer(Message, CurrentUrl, Line)
 		{
 			var agentData;
-			if (urlToLogErrorsOnServer)
+			if (urlToSendErrorsToServer)
 			{
 				agentData = _detectAgent();
 				CurrentUrl = CurrentUrl || location.href;
@@ -75,7 +75,7 @@
 				}
 
 				var t = new Image();
-				t.src = urlToLogErrorsOnServer +
+				t.src = urlToSendErrorsToServer +
 					'&url=' + encodeURIComponent(CurrentUrl) +
 					'&line=' + Line +
 					'&os=' + encodeURIComponent(agentData.os) +
@@ -89,13 +89,13 @@
 		}
 
 		/**
-		 * Log error on google analytics
+		 * Send error to google analytics
 		 * @param {String} Message
 		 * @param {String|Null} CurrentUrl
 		 * @param {int} Line
 		 * @private
 		 */
-		function _logErrorOnGA(Message, CurrentUrl, Line)
+		function _sendErrorToGA(Message, CurrentUrl, Line)
 		{
 			var agentData = _detectAgent();
 			CurrentUrl = CurrentUrl || location.href;
@@ -120,25 +120,25 @@
 		 * @param {String|Null} Url
 		 * @param {int} Line
 		 */
-		var logError = function (Message, Url, Line)
+		var sendError = function (Message, Url, Line)
 		{};
 
 
 
 		/**
-		 * Log message on local server
+		 * Send message to local server
 		 * @param {String} Message
 		 * @private
 		 */
-		function _logMessageOnServer(Message)
+		function _sendMessageToServer(Message)
 		{
 			var agentData;
-			if (urlToLogErrorsOnServer)
+			if (urlToSendMessagesToServer)
 			{
 				agentData = _detectAgent();
 
 				var t = new Image();
-				t.src = urlToLogErrorsOnServer +
+				t.src = urlToSendMessagesToServer +
 					'&url=' + encodeURIComponent(location.href) +
 					'&os=' + encodeURIComponent(agentData.os) +
 					'&browser=' + encodeURIComponent(agentData.browser + ' v.' + agentData.version) +
@@ -147,11 +147,11 @@
 		}
 
 		/**
-		 * Log message on google analytics
+		 * Send message to google analytics
 		 * @param {String} Message
 		 * @private
 		 */
-		function _logMessageOnGA(Message)
+		function _sendMessageToGA(Message)
 		{
 			var agentData = _detectAgent();
 
@@ -169,23 +169,23 @@
 		 * Log message (will be reimplemented in init)
 		 * @param {String} Message
 		 */
-		var logMessage = function (Message)
+		var sendMessage = function (Message)
 		{};
 
 		function init(Params)
 		{
 			// init error loggers
-			if ('logErrorsOnServer' in Params || 'logErrorsOnGA' in Params)
+			if ('sendErrorsToServer' in Params || 'sendErrorsToGA' in Params)
 			{
-				if ('logErrorsOnServer' in Params) {
-					urlToLogErrorsOnServer = Params.logErrorsOnServer;
+				if ('sendErrorsToServer' in Params) {
+					urlToSendErrorsToServer = Params.sendErrorsToServer;
 				}
-				if (('logErrorsOnGA' in Params) && ! ('_gaq' in window)) {
+				if (('sendErrorsToGA' in Params) && ! ('_gaq' in window)) {
 					window._gaq = [];
 				}
 
-				// reimplementing log method on init to make it configuralbe
-				logError = function(Message, Url, Line)
+				// reimplementing send method on init to make it configuralbe
+				sendError = function(Message, Url, Line)
 				{
 					// to easily log error in catch statement
 					if (Message instanceof Error) {
@@ -194,11 +194,11 @@
 						Message = Message.message;
 					}
 
-					if ('logErrorsOnServer' in Params) {
-						_logErrorOnServer(Message, Url, Line);
+					if ('sendErrorsToServer' in Params) {
+						_sendErrorToServer(Message, Url, Line);
 					}
-					if ('logErrorsOnGA' in Params && Params.logErrorsOnGA) {
-						_logErrorOnGA(Message, Url, Line);
+					if ('sendErrorsToGA' in Params && Params.sendErrorsToGA) {
+						_sendErrorToGA(Message, Url, Line);
 					}
 				};
 
@@ -211,7 +211,7 @@
 					if (! errorSent)
 					{
 						errorSent = true;
-						logError(Message, Url, Line);
+						sendError(Message, Url, Line);
 					}
 					// to prevent old IE and Opera error alert
 					return preventErrorAlert;
@@ -219,23 +219,23 @@
 			}
 
 			// init message loggers
-			if ('logMessagesOnServer' in Params || 'logMessagesOnGA' in Params)
+			if ('sendMessagesToServer' in Params || 'sendMessagesToGA' in Params)
 			{
-				if ('logMessagesOnServer' in Params) {
-					urlToLogErrorsOnServer = Params.logMessagesOnServer;
+				if ('sendMessagesToServer' in Params) {
+					urlToSendMessagesToServer = Params.sendMessagesToServer;
 				}
-				if (('logMessagesOnGA' in Params) && ! ('_gaq' in window)) {
+				if (('sendMessagesToGA' in Params) && ! ('_gaq' in window)) {
 					window._gaq = [];
 				}
 
-				// reimplementing log method on init to make it configuralbe
-				logMessage = function(Message)
+				// reimplementing send method on init to make it configuralbe
+				sendMessage = function(Message)
 				{
-					if ('logMessagesOnServer' in Params) {
-						_logMessageOnServer(Message);
+					if ('sendMessagesToServer' in Params) {
+						_sendMessageToServer(Message);
 					}
-					if ('logErrorsOnGA' in Params && Params.logErrorsOnGA) {
-						_logMessageOnGA(Message);
+					if ('sendErrorsToGA' in Params && Params.sendErrorsToGA) {
+						_sendMessageToGA(Message);
 					}
 				};
 			}
@@ -245,8 +245,8 @@
 		}
 		return {
 			init: function (Params) { return init(Params); },
-			logError: function (Message, Url, Line) { return logError(Message, Url, Line); },
-			logMessage: function (Message) { return logMessage(Message); }
+			sendError: function (Message, Url, Line) { return sendError(Message, Url, Line); },
+			sendMessage: function (Message) { return sendMessage(Message); }
 		};
 	}());
 	// TODO think about jQuery errors (jQuery.error = function (message) {})
@@ -260,28 +260,31 @@
 		"use strict";
 
 		Logger.init({
-			logErrorsOnServer: 'index.html?action=log_client_error',
-			logErrorsOnGA: true,
-			logMessagesOnServer: 'index.html?action=log_client_message',
-			logMessagesOnGA: true
+			sendErrorsToServer: 'index.html?action=log_client_error',
+			sendErrorsToGA: true,
+			sendMessagesToServer: 'index.html?action=log_client_message',
+			sendMessagesToGA: true
 		});
 	}());
 </script>
 
 
 <script type="text/javascript">
+	// Example of logging a message
+	Logger.sendMessage('just message to log');
+
 	// Examples of error logging
 	// 1 in catch statement
 	try {
-		throw new Error('some error message');
+		throw new Error('throwing an error with message');
 	}
 	catch (e) {
-		Logger.logError(e);
+		Logger.sendError(e);
 	}
 
 	// 2 by hand, when we just think it's an error for any reason
-	Logger.logError('error message by hand');
+	Logger.sendError('error message by hand');
 
-	// Example of logging a message
-	Logger.logMessage('just message to log');
+	// 3 uncaught errors are sent to server too (while trying to get undefined properties)
+	window.str.t;
 </script>
