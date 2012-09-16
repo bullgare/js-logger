@@ -1,0 +1,176 @@
+<script type="text/javascript">
+	var Logger = (function ()
+	{
+		"use strict";
+
+		var urlToLogErrorsOnServer = null,
+			urlToLogMessagesOnServer = null;
+
+		/**
+		 * Detect OS and browser
+		 * @return {Object}
+		 * @private
+		 */
+		function _detectAgent()
+		{
+			if (! _detectAgent.hasOwnProperty('detectedAgent'))
+			{
+				var agent = window.navigator.userAgent.toLowerCase(),
+					browserDetectMaps = {
+						'firefox': {name: 'firefox', versionRegExp: /(firefox)\/([0-9.]+)/},
+						'opera': {name: 'opera', versionRegExp: /(version)\/([0-9.]+)/},
+						'msie': {name: 'ie', versionRegExp: /(msie) ([0-9.]+)/},
+						'chrome': {name: 'chrome', versionRegExp: /chrom(e|ium)\/([0-9.]+)/},
+						'safari': {name: 'safari', versionRegExp: /(version)\/([0-9.]+)/}
+					},
+					browser = 'other',
+					version = 'unknown',
+					versionRegExp = null,
+					os = window.navigator.platform;
+
+				for (var stringToFind in browserDetectMaps)
+				{
+					if (browserDetectMaps.hasOwnProperty(stringToFind))
+					{
+						if (typeof stringToFind != 'undefined' && agent.indexOf(stringToFind) > -1)
+						{
+							browser = browserDetectMaps[stringToFind].name;
+							versionRegExp = browserDetectMaps[stringToFind].versionRegExp;
+							break;
+						}
+					}
+				}
+
+				if (versionRegExp)
+				{
+					var matched = agent.match(versionRegExp);
+					if (matched && matched.length) {
+						version = matched[2];
+					}
+				}
+				// store results to cache
+				_detectAgent.detectedAgent = {'browser': browser, 'version': version, 'os': os};
+			}
+
+			return _detectAgent.detectedAgent;
+		}
+
+		/**
+		 * Log error on local server
+		 * @param {String} Message
+		 * @param {String|Null} CurrentUrl
+		 * @param {int} Line
+		 * @private
+		 */
+		function _logErrorOnServer(Message, CurrentUrl, Line)
+		{
+			var agentData;
+			if (urlToLogErrorsOnServer)
+			{
+				agentData = _detectAgent();
+				CurrentUrl = CurrentUrl || window.location.href;
+
+				var t = new Image();
+				t.src = urlToLogErrorsOnServer +
+					'&url=' + encodeURIComponent(CurrentUrl) +
+					'&line=' + Line +
+					'&os=' + encodeURIComponent(agentData.os) +
+					'&browser=' + encodeURIComponent(agentData.browser + ' v.' + agentData.version) +
+					'&message=' + encodeURIComponent(Message);
+				document.getElementsByTagName('head')[0].
+					appendChild(t).
+					removeChild(t);
+			}
+		}
+
+		/**
+		 * Log error on google analytics
+		 * @param {String} Message
+		 * @param {String|Null} CurrentUrl
+		 * @param {int} Line
+		 * @private
+		 */
+		function _logErrorOnGA(Message, CurrentUrl, Line)
+		{
+			var agentData = _detectAgent();
+			CurrentUrl = CurrentUrl || window.location.href;
+
+			_gaq.push([
+				'_trackEvent',
+				'Custom Javascript Error',
+				Message,
+				agentData.browser + ' v.' + agentData.version + '(' + agentData.os + ')' + ' -> ' + CurrentUrl + " :" + Line,
+				0,
+				true
+			]);
+		}
+
+		/**
+		 * Log error (will be reimplemented in init)
+		 * @param {String} Message
+		 * @param {String|Null} Url
+		 * @param {int} Line
+		 */
+		var logError = function (Message, Url, Line)
+		{};
+
+		function init(Params)
+		{
+			// init error loggers
+			if ('logErrorsOnServer' in Params || 'logErrorsOnGA' in Params)
+			{
+				if ('logErrorsOnServer' in Params) {
+					urlToLogErrorsOnServer = Params.logErrorsOnServer;
+				}
+				if (('logErrorsOnGA' in Params) && ! ('_gaq' in window)) {
+					window._gaq = [];
+				}
+
+				// reimplementing log method on init to make it configuralbe
+				logError = function(Message, Url, Line)
+				{
+					if ('logErrorsOnServer' in Params) {
+						_logErrorOnServer(Message, Url, Line);
+					}
+					if ('logErrorsOnGA' in Params && Params.logErrorsOnGA) {
+						_logErrorOnGA(Message, Url, Line);
+					}
+				};
+
+				// to prevent multiple error messages from one page. we want only first error occured
+				var errorSent = false;
+				// logging any uncatched error
+				window.onerror = function (Message, Url, Line)
+				{
+					var preventErrorAlert = true;
+					if (! errorSent)
+					{
+						errorSent = true;
+						logError(Message, Url, Line);
+					}
+					// to prevent old IE and Opera error alert
+					return preventErrorAlert;
+				};
+			}
+		}
+		return {
+			init: init,
+			logError: function (Message, Url, Line) { return logError(Message, Url, Line); }
+		};
+	}());
+</script>
+
+
+<!-- Example init -->
+<script type="text/javascript">
+	(function()
+	{
+		"use strict";
+
+		Logger.init({
+			logErrorsOnServer: 'index.html?action=log_client_error',
+			logErrorsOnGA: true
+		});
+	}());
+
+</script>
