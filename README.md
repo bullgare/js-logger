@@ -9,8 +9,8 @@ This javascript code is meant to be included somewhere in the head of the docume
 It does not have to be saved to some *.js-file because an error can occur while loading that file.
 This peace of code has to be inserted by server side on every page where logging is needed.
 
-== Initialization
-This *object must be initialized* and you have to provide initialization object to init method like that:
+## Initialization
+This **object must be initialized** and you have to provide initialization object to init method like that:
 ```javascript
 	(function()
 	{
@@ -23,18 +23,18 @@ This *object must be initialized* and you have to provide initialization object 
 	}());
 ```
 You can provide one to four parameters:
-- to send errors and messages to server - *sendErrorsToServer* and *sendMessagesToServer* respectively (string - url for sending logs)
-- to send errors and messages to google analytics account - *sendErrorsToGA* and *sendMessagesToGA* respectively (boolean).
+- to send errors and messages to server - **sendErrorsToServer** and **sendMessagesToServer** respectively (a string - url for sending logs)
+- to send errors and messages to google analytics account - **sendErrorsToGA** and **sendMessagesToGA** respectively (boolean).
 Any parameter can be omitted.
 
-== Usage examples
+## Usage examples
 
-=== Logging a message
+### Logging a message
 ```javascript
 Logger.sendMessage('just message to log');
 ```
 
-=== Error logging
+### Error logging
 
 * in catch statement
 	```javascript
@@ -57,13 +57,13 @@ Logger.sendMessage('just message to log');
 	```
 
 
-== What needs to be done on the other side
-=== Receiving errors on server side
+## What needs to be done on the other side
+### Receiving errors on server side
 needs some serverside language (Node, Python, PHP, Ruby or something else) to log it into some database or to a file.
 
 
-=== For viewing errors and messages in your google analytics account
-you need to proceed to *Standard Reporting* &larr; *Content* &larr; *Events* &larr; *Overview* &larr; *Custom Javascript Message*(*Custom Javascript Error*).
+### For viewing errors and messages in your google analytics account
+you need to proceed to **Standard Reporting** &rarr; **Content** &rarr; **Events** &rarr; **Overview** &rarr; **Custom Javascript Message**(**Custom Javascript Error**).
 
 And of course google analytics must be enabled with a standard code like that:
 ```javascript
