@@ -68,18 +68,19 @@
 			if (urlToLogErrorsOnServer)
 			{
 				agentData = _detectAgent();
-				CurrentUrl = CurrentUrl || window.location.href;
+				CurrentUrl = CurrentUrl || location.href;
 
 				var t = new Image();
 				t.src = urlToLogErrorsOnServer +
 					'&url=' + encodeURIComponent(CurrentUrl) +
-					'&line=' + Line +
+					'&line=' + parseInt(Line, 10) +
 					'&os=' + encodeURIComponent(agentData.os) +
 					'&browser=' + encodeURIComponent(agentData.browser + ' v.' + agentData.version) +
 					'&message=' + encodeURIComponent(Message);
-				document.getElementsByTagName('head')[0].
-					appendChild(t).
-					removeChild(t);
+
+				var h = document.getElementsByTagName('head')[0];
+				h.appendChild(t);
+				h.removeChild(t);
 			}
 		}
 
@@ -93,13 +94,13 @@
 		function _logErrorOnGA(Message, CurrentUrl, Line)
 		{
 			var agentData = _detectAgent();
-			CurrentUrl = CurrentUrl || window.location.href;
+			CurrentUrl = CurrentUrl || location.href;
 
 			_gaq.push([
 				'_trackEvent',
 				'Custom Javascript Error',
 				Message,
-				agentData.browser + ' v.' + agentData.version + '(' + agentData.os + ')' + ' -> ' + CurrentUrl + " :" + Line,
+				agentData.browser + ' v.' + agentData.version + '(' + agentData.os + ')' + ' -> ' + CurrentUrl + " :" + parseInt(Line, 10),
 				0,
 				true
 			]);
@@ -112,6 +113,55 @@
 		 * @param {int} Line
 		 */
 		var logError = function (Message, Url, Line)
+		{};
+
+
+
+		/**
+		 * Log message on local server
+		 * @param {String} Message
+		 * @private
+		 */
+		function _logMessageOnServer(Message)
+		{
+			var agentData;
+			if (urlToLogErrorsOnServer)
+			{
+				agentData = _detectAgent();
+
+				var t = new Image();
+				t.src = urlToLogErrorsOnServer +
+					'&url=' + encodeURIComponent(location.href) +
+					'&os=' + encodeURIComponent(agentData.os) +
+					'&browser=' + encodeURIComponent(agentData.browser + ' v.' + agentData.version) +
+					'&message=' + encodeURIComponent(Message);
+			}
+		}
+
+		/**
+		 * Log message on google analytics
+		 * @param {String} Message
+		 * @private
+		 */
+		function _logMessageOnGA(Message)
+		{
+			var agentData = _detectAgent();
+
+			_gaq.push([
+				'_trackEvent',
+				'Custom Javascript Message',
+				Message,
+				agentData.browser + ' v.' + agentData.version + '(' + agentData.os + ')' + ' -> ' + location.href,
+				0,
+				true
+			]);
+		}
+
+		/**
+		 * Log message (will be reimplemented in init)
+		 * @param {String} Message
+		 */
+		var logMessage = function (Message)
 		{};
 
 		function init(Params)
@@ -152,12 +202,39 @@
 					return preventErrorAlert;
 				};
 			}
+
+			// init message loggers
+			if ('logMessagesOnServer' in Params || 'logMessagesOnGA' in Params)
+			{
+				if ('logMessagesOnServer' in Params) {
+					urlToLogErrorsOnServer = Params.logMessagesOnServer;
+				}
+				if (('logMessagesOnGA' in Params) && ! ('_gaq' in window)) {
+					window._gaq = [];
+				}
+
+				// reimplementing log method on init to make it configuralbe
+				logMessage = function(Message)
+				{
+					if ('logMessagesOnServer' in Params) {
+						_logMessageOnServer(Message);
+					}
+					if ('logErrorsOnGA' in Params && Params.logErrorsOnGA) {
+						_logMessageOnGA(Message);
+					}
+				};
+			}
+
+			// init can be called just once
+			init = function (Params) {};
 		}
 		return {
-			init: init,
-			logError: function (Message, Url, Line) { return logError(Message, Url, Line); }
+			init: function (Params) { return init(Params); },
+			logError: function (Message, Url, Line) { return logError(Message, Url, Line); },
+			logMessage: function (Message) { return logMessage(Message); }
 		};
 	}());
+	// TODO think about jQuery errors (jQuery.error = function (message) {})
 </script>
 
 
@@ -169,8 +246,9 @@
 
 		Logger.init({
 			logErrorsOnServer: 'index.html?action=log_client_error',
-			logErrorsOnGA: true
+			logErrorsOnGA: true,
+			logMessagesOnServer: 'index.html?action=log_client_message',
+			logMessagesOnGA: true
 		});
 	}());
-
 </script>
