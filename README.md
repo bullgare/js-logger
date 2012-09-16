@@ -1,9 +1,10 @@
 ## What is that for?
 That object is made for sending clientside errors or messages to some server(s).
 
-Implemented two ways of logging an error or message:
+Implemented two ways of logging an error or a message:
 * to google analytics account and
 * to some server via generic image.
+
 That can happen simultaneously.
 
 This javascript code is meant to be included somewhere in the head of the document before any other javascript is loaded and run to properly log errors while loading other scripts.
