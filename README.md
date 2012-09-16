@@ -27,6 +27,7 @@ This object **must be initialized** and you have to provide initialization objec
 You can provide one to four parameters:
 - to send errors and messages to server - **sendErrorsToServer** and **sendMessagesToServer** respectively (a string - url for sending logs)
 - to send errors and messages to google analytics account - **sendErrorsToGA** and **sendMessagesToGA** respectively (boolean).
+
 Any parameter can be omitted.
 
 ## Usage examples
@@ -61,13 +62,13 @@ Logger.sendMessage('just message to log');
 
 ## What needs to be done on the other side
 ### Receiving errors on server side
-needs some serverside language (Node, Python, PHP, Ruby or something else) to log it into some database or to a file.
+needs some serverside language (Node, Python, PHP, Ruby or something else) to log it into a database or to a file.
 
 
-### For viewing errors and messages in your google analytics account
+### For viewing errors and messages in your Google Analytics account
 you need to proceed to **Standard Reporting** &rarr; **Content** &rarr; **Events** &rarr; **Overview** &rarr; **Custom Javascript Message**(**Custom Javascript Error**).
 
-And of course google analytics must be enabled with a standard code like that (it's better to do it after initializing **Logger**):
+And of course Google Analytics must be enabled with a standard code like that (it's better to do it after initializing **Logger**):
 ```javascript
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-XXX']);
