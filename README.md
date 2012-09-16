@@ -1,3 +1,4 @@
+## What is that for?
 That object is made for sending clientside errors or messages to some server(s).
 
 Implemented two ways of logging an error or message:
@@ -10,17 +11,17 @@ It does not have to be saved to some *.js-file because an error can occur while 
 This peace of code has to be inserted by server side on every page where logging is needed.
 
 ## Initialization
-This **object must be initialized** and you have to provide initialization object to init method like that:
+This object **must be initialized** and you have to provide initialization object to init method like that:
 ```javascript
-	(function()
-	{
-		Logger.init({
-			sendErrorsToServer: '/index.html?action=log_client_error',
-			sendErrorsToGA: true,
-			sendMessagesToServer: '/index.html?action=log_client_message',
-			sendMessagesToGA: true
-		});
-	}());
+(function()
+{
+	Logger.init({
+		sendErrorsToServer: '/index.html?action=log_client_error',
+		sendErrorsToGA: true,
+		sendMessagesToServer: '/index.html?action=log_client_message',
+		sendMessagesToGA: true
+	});
+}());
 ```
 You can provide one to four parameters:
 - to send errors and messages to server - **sendErrorsToServer** and **sendMessagesToServer** respectively (a string - url for sending logs)
@@ -65,7 +66,7 @@ needs some serverside language (Node, Python, PHP, Ruby or something else) to lo
 ### For viewing errors and messages in your google analytics account
 you need to proceed to **Standard Reporting** &rarr; **Content** &rarr; **Events** &rarr; **Overview** &rarr; **Custom Javascript Message**(**Custom Javascript Error**).
 
-And of course google analytics must be enabled with a standard code like that:
+And of course google analytics must be enabled with a standard code like that (it's better to do it after initializing **Logger**):
 ```javascript
 var _gaq = _gaq || [];
 _gaq.push(['_setAccount', 'UA-XXX']);
