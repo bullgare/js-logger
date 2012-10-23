@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Js-logger by bullgare</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Js-logger</h1>
+        <p>Logger for errors and messages from clientside to a server.</p>
+
+        <p class="view"><a href="https://github.com/bullgare/js-logger">View the Project on GitHub <small>bullgare/js-logger</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/bullgare/js-logger/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/bullgare/js-logger/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/bullgare/js-logger">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h2>What is that for?</h2>
+
+<p>That object is made for sending clientside errors or messages to some server(s).</p>
+
+<p>Implemented two ways of logging an error or a message:</p>
+
+<ul>
+<li>to google analytics account and</li>
+<li>to some server via generic image.</li>
+</ul><p>That can happen simultaneously.</p>
+
+<p>This javascript code is meant to be included somewhere in the head of the document before any other javascript is loaded and run to properly log errors while loading other scripts.
+It does not have to be saved to some *.js-file because an error can occur while loading that file.
+This peace of code has to be inserted by server side on every page where logging is needed.</p>
+
+<h2>Initialization</h2>
+
+<p>This object <strong>must be initialized</strong> and you have to provide initialization object to init method like that:</p>
+
+<div class="highlight"><pre><span class="p">(</span><span class="kd">function</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="nx">Logger</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span>
+        <span class="nx">sendErrorsToServer</span><span class="o">:</span> <span class="s1">'/index.html?action=log_client_error'</span><span class="p">,</span>
+        <span class="nx">sendErrorsToGA</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nx">sendMessagesToServer</span><span class="o">:</span> <span class="s1">'/index.html?action=log_client_message'</span><span class="p">,</span>
+        <span class="nx">sendMessagesToGA</span><span class="o">:</span> <span class="kc">true</span>
+    <span class="p">});</span>
+<span class="p">}());</span>
+</pre></div>
+
+<p>You can provide one to four parameters:</p>
+
+<ul>
+<li>to send errors and messages to server - <strong>sendErrorsToServer</strong> and <strong>sendMessagesToServer</strong> respectively (a string - url for sending logs)</li>
+<li>to send errors and messages to google analytics account - <strong>sendErrorsToGA</strong> and <strong>sendMessagesToGA</strong> respectively (boolean).</li>
+</ul><p>Any parameter can be omitted.</p>
+
+<h2>Usage examples</h2>
+
+<h3>Logging a message</h3>
+
+<div class="highlight"><pre><span class="nx">Logger</span><span class="p">.</span><span class="nx">sendMessage</span><span class="p">(</span><span class="s1">'just message to log'</span><span class="p">);</span>
+</pre></div>
+
+<h3>Error logging</h3>
+
+<ul>
+<li>
+<p>in catch statement</p>
+
+<div class="highlight"><pre><span class="k">try</span> <span class="p">{</span>
+    <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">'throwing an error with message'</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Logger</span><span class="p">.</span><span class="nx">sendError</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</li>
+<li>
+<p>by hand, when we just think it's an error for any reason</p>
+
+<div class="highlight"><pre><span class="nx">Logger</span><span class="p">.</span><span class="nx">sendError</span><span class="p">(</span><span class="s1">'error message by hand'</span><span class="p">);</span>
+</pre></div>
+</li>
+<li>
+<p>uncaught errors are sent to server too (trythis code to get undefined property)</p>
+
+<div class="highlight"><pre><span class="nb">window</span><span class="p">.</span><span class="nx">str</span><span class="p">.</span><span class="nx">t</span><span class="p">;</span>
+</pre></div>
+</li>
+</ul><h2>What needs to be done on the other side</h2>
+
+<h3>Receiving errors on server side</h3>
+
+<p>needs some serverside language (Node, Python, PHP, Ruby or something else) to log it into a database or to a file.</p>
+
+<h3>For viewing errors and messages in your Google Analytics account</h3>
+
+<p>you need to proceed to <strong>Standard Reporting</strong> → <strong>Content</strong> → <strong>Events</strong> → <strong>Overview</strong> → <strong>Custom Javascript Message</strong>(**Custom Javascript Error**).</p>
+
+<p>And of course Google Analytics must be enabled with a standard code like that (it's better to do it after initializing <strong>Logger</strong>):</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">_gaq</span> <span class="o">=</span> <span class="nx">_gaq</span> <span class="o">||</span> <span class="p">[];</span>
+<span class="nx">_gaq</span><span class="p">.</span><span class="nx">push</span><span class="p">([</span><span class="s1">'_setAccount'</span><span class="p">,</span> <span class="s1">'UA-XXX'</span><span class="p">]);</span>
+<span class="nx">_gaq</span><span class="p">.</span><span class="nx">push</span><span class="p">([</span><span class="s1">'_trackPageview'</span><span class="p">]);</span>
+
+<span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">ga</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">createElement</span><span class="p">(</span><span class="s1">'script'</span><span class="p">);</span> <span class="nx">ga</span><span class="p">.</span><span class="nx">type</span> <span class="o">=</span> <span class="s1">'text/javascript'</span><span class="p">;</span> <span class="nx">ga</span><span class="p">.</span><span class="nx">async</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="nx">ga</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="p">(</span><span class="s1">'https:'</span> <span class="o">==</span> <span class="nb">document</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">protocol</span> <span class="o">?</span> <span class="s1">'https://ssl'</span> <span class="o">:</span> <span class="s1">'http://www'</span><span class="p">)</span> <span class="o">+</span> <span class="s1">'.google-analytics.com/ga.js'</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByTagName</span><span class="p">(</span><span class="s1">'script'</span><span class="p">)[</span><span class="mi">0</span><span class="p">];</span> <span class="nx">s</span><span class="p">.</span><span class="nx">parentNode</span><span class="p">.</span><span class="nx">insertBefore</span><span class="p">(</span><span class="nx">ga</span><span class="p">,</span> <span class="nx">s</span><span class="p">);</span>
+<span class="p">})();</span>
+</pre></div>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/bullgare">bullgare</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
